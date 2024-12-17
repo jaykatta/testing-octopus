@@ -1,0 +1,49 @@
+step "transfer-a-package" {
+    name = "Transfer a Package"
+    properties = {
+        Octopus.Action.TargetRoles = "reports-targets"
+    }
+
+    action {
+        action_type = "Octopus.TransferPackage"
+        properties = {
+            Octopus.Action.Package.DownloadOnTentacle = "True"
+            Octopus.Action.Package.FeedId = "nexus-repo"
+            Octopus.Action.Package.PackageId = "reports:module"
+            Octopus.Action.Package.TransferPath = "/home/jenkins/deploy"
+        }
+        worker_pool_variable = ""
+
+        packages {
+            acquisition_location = "ExecutionTarget"
+            feed = "nexus-repo"
+            package_id = "reports:module"
+            properties = {
+                SelectionMode = "immediate"
+            }
+        }
+    }
+}
+
+step "rename-the-jar" {
+    name = "Rename the jar"
+    properties = {
+        Octopus.Action.TargetRoles = "reports-targets"
+    }
+
+    action {
+        action_type = "Octopus.Script"
+        properties = {
+            Octopus.Action.RunOnServer = "false"
+            Octopus.Action.Script.ScriptBody = <<-EOT
+                sudo python3 /home/jenkins/jar_rename.py
+                
+                sudo python3 /home/jenkins/dockers.py reports
+                
+                EOT
+            Octopus.Action.Script.ScriptSource = "Inline"
+            Octopus.Action.Script.Syntax = "Bash"
+        }
+        worker_pool_variable = ""
+    }
+}
