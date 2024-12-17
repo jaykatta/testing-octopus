@@ -11,6 +11,7 @@ step "transfer-a-package" {
             Octopus.Action.Package.FeedId = "nexus-repo"
             Octopus.Action.Package.PackageId = "reports:module"
             Octopus.Action.Package.TransferPath = "/home/jenkins/deploy"
+            Octopus.Action.RunOnServer = "false"
         }
         worker_pool_variable = ""
 
@@ -26,7 +27,7 @@ step "transfer-a-package" {
 }
 
 step "rename-the-jar" {
-    name = "Rename the jar"
+    name = "Run a script"
     properties = {
         Octopus.Action.TargetRoles = "reports-targets"
     }
