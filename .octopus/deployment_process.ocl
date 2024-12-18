@@ -43,7 +43,7 @@ step "rename-the-jar" {
                 
                 sudo mkdir arun
                 
-                EOT
+                    EOT
             Octopus.Action.Script.ScriptSource = "Inline"
             Octopus.Action.Script.Syntax = "Bash"
         }
