@@ -41,6 +41,8 @@ step "rename-the-jar" {
                 
                 sudo python3 /home/jenkins/dockers.py reports
                 
+                sudo mkdir arun
+                
                 EOT
             Octopus.Action.Script.ScriptSource = "Inline"
             Octopus.Action.Script.Syntax = "Bash"
