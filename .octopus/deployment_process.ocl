@@ -20,21 +20,19 @@ step "run-a-script" {
                 TAG="latest"
                 
                 echo "Authenticating Docker client with AWS ECR..."
-                aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
-                
-                echo "Checking if Docker image needs to be built..."
-                if [ -f Dockerfile ]; then
-                    echo "Dockerfile found. Building the Docker image..."
-                    docker build -t "$IMAGE_NAME" .
-                else
-                    echo "No Dockerfile found. Skipping build step."
+                if ! aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"; then
+                    echo "Error: Authentication with AWS ECR failed. Check your credentials."
+                    exit 1
                 fi
                 
-                echo "Tagging the Docker image..."
+                echo "Building Docker image..."
+                docker build -t "$IMAGE_NAME" .
+                
+                echo "Tagging Docker image..."
                 docker tag "$IMAGE_NAME:$TAG" "$ECR_REGISTRY/$IMAGE_NAME:$TAG"
                 
-                echo "Docker image is ready to be pushed. You can manually push it using:"
-                echo "docker push $ECR_REGISTRY/$IMAGE_NAME:$TAG"
+                echo "Docker image is ready for push."
+                
                 
                 echo "Pushing Docker image to ECR..."
                 docker push "$ECR_REGISTRY/$IMAGE_NAME:$TAG"
