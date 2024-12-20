@@ -1,35 +1,7 @@
-step "transfer-a-package" {
-    name = "Transfer a Package"
+step "run-a-script" {
+    name = "Run a Script"
     properties = {
         Octopus.Action.TargetRoles = "backend"
-    }
-
-    action {
-        action_type = "Octopus.TransferPackage"
-        properties = {
-            Octopus.Action.Package.DownloadOnTentacle = "True"
-            Octopus.Action.Package.FeedId = "nexus-repo"
-            Octopus.Action.Package.PackageId = "reports:module"
-            Octopus.Action.Package.TransferPath = "/home/jenkins/deploy"
-            Octopus.Action.RunOnServer = "false"
-        }
-        worker_pool_variable = ""
-
-        packages {
-            acquisition_location = "ExecutionTarget"
-            feed = "nexus-repo"
-            package_id = "reports:module"
-            properties = {
-                SelectionMode = "immediate"
-            }
-        }
-    }
-}
-
-step "rename-the-jar" {
-    name = "Run a script"
-    properties = {
-        Octopus.Action.TargetRoles = "reports-targets"
     }
 
     action {
@@ -37,11 +9,35 @@ step "rename-the-jar" {
         properties = {
             Octopus.Action.RunOnServer = "false"
             Octopus.Action.Script.ScriptBody = <<-EOT
-                sudo python3 /home/jenkins/jar_rename.py
+                #!/bin/bash
                 
-                sudo python3 /home/jenkins/dockers.py reports
+                set -e  # Exit immediately if a command exits with a non-zero status
                 
-                sudo mkdir arun
+                # Variables
+                AWS_REGION="ap-south-1"
+                ECR_REGISTRY="577638373950.dkr.ecr.ap-south-1.amazonaws.com"
+                IMAGE_NAME="octopus"
+                TAG="latest"
+                
+                echo "Authenticating Docker client with AWS ECR..."
+                aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+                
+                echo "Checking if Docker image needs to be built..."
+                if [ -f Dockerfile ]; then
+                    echo "Dockerfile found. Building the Docker image..."
+                    docker build -t "$IMAGE_NAME" .
+                else
+                    echo "No Dockerfile found. Skipping build step."
+                fi
+                
+                echo "Tagging the Docker image..."
+                docker tag "$IMAGE_NAME:$TAG" "$ECR_REGISTRY/$IMAGE_NAME:$TAG"
+                
+                echo "Docker image is ready to be pushed. You can manually push it using:"
+                echo "docker push $ECR_REGISTRY/$IMAGE_NAME:$TAG"
+                
+                echo "Pushing Docker image to ECR..."
+                docker push "$ECR_REGISTRY/$IMAGE_NAME:$TAG"
                 
                 EOT
             Octopus.Action.Script.ScriptSource = "Inline"
