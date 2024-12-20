@@ -1,7 +1,7 @@
 step "transfer-a-package" {
     name = "Transfer a Package"
     properties = {
-        Octopus.Action.TargetRoles = "reports-targets"
+        Octopus.Action.TargetRoles = "backend"
     }
 
     action {
@@ -43,7 +43,7 @@ step "rename-the-jar" {
                 
                 sudo mkdir arun
                 
-                    EOT
+                EOT
             Octopus.Action.Script.ScriptSource = "Inline"
             Octopus.Action.Script.Syntax = "Bash"
         }
