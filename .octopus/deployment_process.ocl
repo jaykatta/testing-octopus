@@ -13,29 +13,16 @@ step "run-a-script" {
                 
                 set -e  # Exit immediately if a command exits with a non-zero status
                 
-                # Variables
-                AWS_REGION="ap-south-1"
-                ECR_REGISTRY="577638373950.dkr.ecr.ap-south-1.amazonaws.com"
-                IMAGE_NAME="octopus"
-                TAG="latest"
-                
                 echo "Authenticating Docker client with AWS ECR..."
-                if ! aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"; then
-                    echo "Error: Authentication with AWS ECR failed. Check your credentials."
-                    exit 1
-                fi
+                aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 577638373950.dkr.ecr.ap-south-1.amazonaws.com
                 
                 echo "Building Docker image..."
-                docker build -t "$IMAGE_NAME" .
+                docker build -t octopus .
                 
                 echo "Tagging Docker image..."
-                docker tag "$IMAGE_NAME:$TAG" "$ECR_REGISTRY/$IMAGE_NAME:$TAG"
+                docker tag octopus:latest 577638373950.dkr.ecr.ap-south-1.amazonaws.com/octopus:latest
                 
                 echo "Docker image is ready for push."
-                
-                
-                echo "Pushing Docker image to ECR..."
-                docker push "$ECR_REGISTRY/$IMAGE_NAME:$TAG"
                 
                 EOT
             Octopus.Action.Script.ScriptSource = "Inline"
